@@ -38,12 +38,49 @@ If you'd like to share your usage of gen_smtp, please contact me.
 Client Example
 ==============
 
-Here's an example usage of the client:
+Configuration
+-------------
+
+To configure gen_smtp, configure like this at your sys.config:
+<pre>
+[
+ {gen_smtp, 
+  [{poolsize, 1},
+   {opts, [
+      {relay, "smtp.gmail.com"},
+      {username, "whatever@test.com"},
+      {password, "1234"},
+      {retries, 3},
+      {reconnect, 10000}], %% 10s
+      {callback, fun Module:Func/1}} 
+  ]}
+].
+</pre>
+
+Use 'retries' option to retries connect before go to reconnect logic. Default is 1
+Use 'reconnect' option to configure reconnect policy. Default is false.
+And at the option,  you can pass the callback function. If there was email sent, the fun will be called
+with argument is response of smpt server. Default is fun handle_callback:response/1 
+
+
+Once start gen_smtp application, you need to start pool connection : 
+<pre>
+gen_smtp_client:start_connection().
+</pre>
+
+
+Here's an example send a email:
 
 <pre>
-gen_smtp_client:send({"whatever@test.com", ["andrew@hijacked.us"],
- "Subject: testing\r\nFrom: Andrew Thompson <andrew@hijacked.us>\r\nTo: Some Dude <foo@bar.com>\r\n\r\nThis is the email body"},
-  [{relay, "smtp.gmail.com"}, {username, "me@gmail.com"}, {password, "mypassword"}]).
+To = <<"foo@bar.com">>,
+MailBody = mimemail:encode({<<"text">>, <<"plain">>,
+                              [{<<"Subject">>, <<"testing">>},
+                              {<<"From">>, <<>>},
+                              {<<"To">>, To}],
+                              [], <<"This is the email body">>}).
+gen_smtp_client:send(To, MailBody).
+gen_smtp_client:send(<<"whatever@test.com">>, To, MailBody).
+gen_smtp_client:send([<<"foo@bar.com>">>, <<"baz@bar.com">>], MailBody).
 </pre>
 
 The From and To addresses will be wrapped in &lt;&gt;s if they aren't already,
@@ -55,6 +92,35 @@ If you want to mandate tls or auth, you can pass `{tls, always}` or `{auth,
 always}` as one of the options. You can specify an alternate port with `{port,
 2525}` (default is 25) or you can indicate that the server is listening for SSL
 connections using `{ssl, true}` (port defaults to 465 with this option).
+
+
+Simple smtp client build and run 
+--------------------------------
+make 
+make rel
+
+Start smtp client
+
+cd _default/default/rel/gen_smtp/bin
+./gen_smtp start
+./gen_smtp stop
+
+
+Simple smtp client Test
+========================
+cd _default/default/rel/gen_smtp/bin
+./gen_smtp console
+>> gen_smtp_client:start_connection().
+>> To = <<"foo@bar.com">>,
+>> MailBody = mimemail:encode({<<"text">>, <<"plain">>,
+                              [{<<"Subject">>, <<"testing">>},
+                              {<<"From">>, <<>>},
+                              {<<"To">>, To}],
+                              [], <<"This is the email body">>}).
+>> gen_smtp_client:send(To, MailBody).
+>> smtp_client_example:send(<<"foo@bar.com">>, <<"This is the email body">>).
+
+
 
 DKIM signing of outgoing emails
 -------------------------------
@@ -83,7 +149,9 @@ SignedMailBody = \
                   [],
                   <<"This is the email body">>},
                   [{dkim, DKIMOptions}]),
-gen_smtp_client:send({"whatever@example.com", ["andrew@hijacked.us"], SignedMailBody}, []).
+gen_smtp_client:send(["andrew@hijacked.us"], SignedMailBody).
+
+
 ```
 Don't forget to put your public key to `foo.bar._domainkey.example.com` TXT DNS record as smth like
 ```
@@ -147,10 +215,24 @@ gen_smtp_server:start(smtp_server_example, [[], [{protocol, ssl}, {port, 1465}]]
 
 This starts 2 listeners, one with the default config, and one with the default config except that its running in SSL mode on port 1465.
 
+Then you can configure at sys.config  for gen_smtp_client as follow :
+
+[
+ {gen_smtp, 
+  [{poolsize, 2},
+   {opts, [
+      {relay, "localhost"},
+      {port, 1465},
+      {ssl, true}]}
+  ]}
+].
+
 You can connect and test this using the gen_smtp_client via something like:
 
 <pre>
-gen_smtp_client:send({"whatever@test.com", ["andrew@hijacked.us"], "Subject: testing\r\nFrom: Andrew Thompson \r\nTo: Some Dude \r\n\r\nThis is the email body"}, [{relay, "localhost"}, {port, 1465}, {ssl, true}]).
+gen_smtp_client:start_connection().
+
+gen_smtp_client:send("whatever@test.com", ["andrew@hijacked.us"], "Subject: testing\r\nFrom: Andrew Thompson \r\nTo: Some Dude \r\n\r\nThis is the email body"}]).
 </pre>
 
 If you want to listen on IPv6, you can use the {family, inet6} and {address, "::"} options to enable listening on IPv6.
