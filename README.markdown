@@ -58,9 +58,11 @@ To configure gen_smtp, configure like this at your sys.config:
 </pre>
 
 Use 'retries' option to retries connect before go to reconnect logic. Default is 1
+
 Use 'reconnect' option to configure reconnect policy. Default is false.
+
 And at the option,  you can pass the callback function. If there was email sent, the fun will be called
-with argument is response of smpt server. Default is fun handle_callback:response/1 
+with argument is response of smpt server. Default is fun handle_callback:response/1. 
 
 
 Once start gen_smtp application, you need to start pool connection : 
@@ -97,6 +99,7 @@ connections using `{ssl, true}` (port defaults to 465 with this option).
 Simple smtp client build and run 
 --------------------------------
 make 
+
 make rel
 
 Start smtp client
@@ -109,7 +112,10 @@ cd _default/default/rel/gen_smtp/bin
 Simple smtp client Test
 ========================
 cd _default/default/rel/gen_smtp/bin
+
 ./gen_smtp console
+
+<pre>
 >> gen_smtp_client:start_connection().
 >> To = <<"foo@bar.com">>,
 >> MailBody = mimemail:encode({<<"text">>, <<"plain">>,
@@ -119,7 +125,7 @@ cd _default/default/rel/gen_smtp/bin
                               [], <<"This is the email body">>}).
 >> gen_smtp_client:send(To, MailBody).
 >> smtp_client_example:send(<<"foo@bar.com">>, <<"This is the email body">>).
-
+</pre>
 
 
 DKIM signing of outgoing emails
