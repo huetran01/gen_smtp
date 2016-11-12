@@ -102,14 +102,16 @@ make
 
 make rel
 
-Start smtp client
+Start/Stop smtp client as follows:
 
 cd _default/default/rel/gen_smtp/bin
+
 ./gen_smtp start
+
 ./gen_smtp stop
 
 
-Simple smtp client Test
+Simple smtp client test
 ========================
 cd _default/default/rel/gen_smtp/bin
 
@@ -222,7 +224,7 @@ gen_smtp_server:start(smtp_server_example, [[], [{protocol, ssl}, {port, 1465}]]
 This starts 2 listeners, one with the default config, and one with the default config except that its running in SSL mode on port 1465.
 
 Then you can configure at sys.config  for gen_smtp_client as follow :
-
+<pre>
 [
  {gen_smtp, 
   [{poolsize, 2},
@@ -232,6 +234,7 @@ Then you can configure at sys.config  for gen_smtp_client as follow :
       {ssl, true}]}
   ]}
 ].
+</pre>
 
 You can connect and test this using the gen_smtp_client via something like:
 
