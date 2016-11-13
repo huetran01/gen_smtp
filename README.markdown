@@ -104,7 +104,7 @@ make rel
 
 Start/Stop smtp client as follows:
 
-cd _default/default/rel/gen_smtp/bin
+cd _build/default/rel/gen_smtp/bin
 
 ./gen_smtp start
 
@@ -113,7 +113,7 @@ cd _default/default/rel/gen_smtp/bin
 
 Simple smtp client test
 ========================
-cd _default/default/rel/gen_smtp/bin
+cd _build/default/rel/gen_smtp/bin
 
 ./gen_smtp console
 
