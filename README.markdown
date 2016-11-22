@@ -52,7 +52,7 @@ To configure gen_smtp, configure like this at your sys.config:
       {password, "1234"},
       {retries, 3},
       {reconnect, 10000}], %% 10s
-      {callback, fun Module:Func/1}} 
+      {smtp_cb, [{module, handle_callback}, {func, response}]}]
   ]}
 ].
 </pre>

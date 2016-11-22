@@ -22,7 +22,11 @@ start_connection() ->
 
 init([Options]) ->	
 	RelayDomain = proplists:get_value(relay, Options),
-	MXRecords = case proplists:get_value(no_mx_lookups, Options) of
+	CallBack = proplists:get_value(smtp_cb, Options, []),
+	CB_Mod = proplists:get_value(module, CallBack, handle_callback),
+	CB_Fun = proplists:get_value(func, CallBack, response),
+	NewOptions = [{callback, fun CB_Mod:CB_Fun/1} | Options],
+	MXRecords = case proplists:get_value(no_mx_lookups, NewOptions) of
 	true -> [];
 	_ -> smtp_util:mxlookup(RelayDomain)
 	end,
@@ -30,7 +34,7 @@ init([Options]) ->
 	[] -> [{0, RelayDomain}]; % maybe we're supposed to relay to a host directly
 	_ -> MXRecords
 	end,
-	case try_smtp_sessions(Hosts, Options, []) of 
+	case try_smtp_sessions(Hosts, NewOptions, []) of 
 	State when is_record(State, state) -> 
 		{ok, State};
 	ErrMsg  -> 
